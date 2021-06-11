@@ -165,11 +165,11 @@ object TreeExtensions {
   implicit class CollectFirstExtension(tree: Tree) {
     final def collectFirst[T](pf: PartialFunction[Tree, T]): Option[T] = {
       var result = Option.empty[T]
+      val fn = pf.lift
       object traverser extends SimpleTraverser {
         override def apply(t: Tree): Unit = {
-          if (result.isEmpty && pf.isDefinedAt(t)) {
-            result = Some(pf(t))
-          } else if (result.isEmpty) {
+          result = fn(t).orElse(result)
+          if (result.nonEmpty) {
             super.apply(t)
           }
         }
